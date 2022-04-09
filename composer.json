@@ -1,0 +1,6 @@
+{
+    "require": {
+        "simplito/elliptic-php": "^1.0",
+        "kornrunner/keccak": "^1.1"
+    }
+}
