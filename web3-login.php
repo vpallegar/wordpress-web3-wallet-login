@@ -147,9 +147,9 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 					wp_enqueue_style( 'web3-login-plugin-sitestyles', WEB3LBS_URL . 'public/css/web3-login-styles.css', false, filemtime( WEB3LBS_PATH . 'public/css/web3-login-styles.css' ), 'all' );
 
 					// Add external script dependencies.
-					wp_register_script( 'web3-login-plugin-library', 'https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js', false );
+					wp_register_script( 'web3-login-plugin-library', WEB3LBS_URL . 'public/js/web3.min.js', false );
 					wp_enqueue_script( 'web3-login-plugin-library' );
-					wp_register_script( 'web3-login-plugin-librarybops', 'https://cdn.jsdelivr.net/gh/chrisdickinson/bops@master/dist/bops.js', false );
+					wp_register_script( 'web3-login-plugin-librarybops', WEB3LBS_URL . 'public/js/bops.js', false );
 					wp_enqueue_script( 'web3-login-plugin-librarybops' );
 
 					// Load login button scripts.

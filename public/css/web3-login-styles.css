@@ -3,6 +3,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    margin-bottom: 10px;
 }
 .web3-login-button-wrapper button {
     width: 100%;
@@ -12,14 +13,14 @@
     border-radius: 5px;
     box-shadow: 0px 0px 10px rgb(0 0 0 / 10%);
     padding: 5px 0;
-    margin: 10px 0 20px 0;
+    margin: 10px 0;
     background: #ededed;
     color: black;
     text-transform: uppercase;
     cursor: pointer;
 }
 
-.web3loginMsg {
+.web3-login-button-wrapper .web3loginMsg {
     width: 300px;
     max-width: 100%;
     margin: 0 auto;
