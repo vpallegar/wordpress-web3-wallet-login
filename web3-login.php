@@ -134,7 +134,7 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		 *
 		 * @return void
 		 */
-		public function setupLoginpage() {
+		protected function setupLoginpage() {
 
 			// Enable login form adjustments if web3-login is enabled.
 			$settings = get_option('web3-login_options') ?? [];
@@ -159,7 +159,7 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 
 
 				// Add our login button.
-				add_action('login_footer', function() {
+				add_action('login_form', function() {
 					$buttonText = _('Login with web3 wallet', 'web3-login');
 					echo '<div class="web3-login-button-wrapper"><button type="button" id="web3loginConnect">' . $buttonText . '</button><div class="web3loginMsg"></div></div>';
 				});
@@ -172,10 +172,6 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		 * Check an authenication attempt.
 		 */
 		public static function checkLogin() {
-
-			ini_set('display_errors', 1);
-			ini_set('display_startup_errors', 1);
-			error_reporting(E_ALL);
 
 			// Check correct variables were sent;
 			$address = sanitize_text_field($_POST['address']) ?? '';
@@ -552,14 +548,6 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 
 		}
 
-
-		/**
-		 * Set defaults on activation.
-		 */
-		public static function activate() {
-
-		}
-
 		/**
 		 * Perform actions during plugin deactivation.
 		 */
@@ -638,8 +626,7 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 	}
 	
 	add_action( 'plugins_loaded', array( 'WEB3_LOGIN', 'init' ) );
-	// register_activation_hook( __FILE__, array( __CLASS__, 'activate' ) );
-	// register_deactivation_hook( __FILE__, array( __CLASS__, 'deactivate' ) );
 	register_activation_hook( __FILE__, array( 'WEB3_LOGIN', 'web3_install') );
+	register_deactivation_hook( __FILE__, array( 'WEB3_LOGIN', 'deactivate' ) );
 
 endif;
