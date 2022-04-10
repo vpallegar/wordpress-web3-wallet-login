@@ -5,6 +5,8 @@ This module allows for users to login via their web3 wallet.
 Administrators can provide the ability to enable web3 login and set public addresses for any wordpress user account.
 
 ![Settings Screen](assets/screenshot-1.png)
+![User Profile Screen](assets/screenshot-2.png)
+![Login Screen](assets/screenshot-3.png)
 
 Features:
 ```
