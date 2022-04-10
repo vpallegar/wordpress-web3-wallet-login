@@ -1,4 +1,4 @@
-=== Plugin Name ===
+=== Web3 Login ===
 Contributors: vpallegar
 Tags: wordpress, web3, wallet, login, ethereum, ploygon
 Requires at least: 4.7
@@ -24,6 +24,8 @@ Features:
 ```
 Settings page:
 `/wp-admin/options-general.php?page=web3-login`
+
+To report issues or submit PR's please visit https://github.com/vpallegar/wordpress-web3-wallet-login.
 
 == Frequently Asked Questions ==
 
