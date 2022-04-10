@@ -1,6 +1,6 @@
 === Web3 Login ===
 Contributors: vpallegar
-Tags: wordpress, web3, wallet, login, ethereum, ploygon
+Tags: wordpress, web3, wallet, login, ethereum, polygon
 Requires at least: 4.7
 Tested up to: 5.9
 Stable tag: 4.3
