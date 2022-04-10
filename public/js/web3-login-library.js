@@ -6,6 +6,7 @@
     if (! (web3LoginButton.length > 0) ) return;
 
     var web3LoginButtonOrgValue = web3LoginButton.html();
+    var web3LoginMsgArea = document.querySelector('.web3-login-button-wrapper .web3loginMsg');
     const web3 = new Web3(window.ethereum);
     var globalAccount;
     var globalSignature;
@@ -27,7 +28,6 @@
         const account = accounts[0];
         globalAccount = accounts[0];
         await signMessage();
-        await verifyMessage();
         
     }
 
@@ -103,7 +103,39 @@
     });
 
     var finalize_login = function() {
-        window.location.href = '/wp-admin/admin-ajax.php?action=web3_login_authenticate&address=' + globalAccount + '&nonce=' + nonce + '&sig=' + globalSignature;
+        $.ajax({
+            url: "/wp-admin/admin-ajax.php",
+            type: 'POST',
+            "data": {
+                "action": 'web3_login_authenticate',
+                "address": globalAccount,
+                "nonce": nonce,
+                "sig": globalSignature
+            },
+            dataType: 'json', // added data type
+            success: function(res) {
+                if (res.success) {
+                    setOutputMsg(res.data);
+                    window.location.href = '/wp-admin/';
+                }
+                else {
+                    setOutputMsg(res.data);
+                    resetForm();
+
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                setOutputMsg('ERROR: ' + res.data);
+                resetForm();
+                console.error(xhr.status);
+                console.error(thrownError);
+            }
+        });
+    }
+
+    var setOutputMsg = function ($message) {
+        web3LoginMsgArea.innerHTML = '<p>' + $message + '</p>';
+
     }
 
     var resetForm = function() {

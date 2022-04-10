@@ -15,3 +15,13 @@
     padding: 10 15px;
     margin: 20px 0;
 }
+
+.web3loginMsg {
+    width: 300px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 10px 0;
+    color: red;
+    text-align: center;
+    font-weight: bold;
+}

@@ -41,6 +41,13 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		public $version = '1.0.0';
 
 		/**
+		 * Database Cchema Version Number
+		 *
+		 * @var  string $version The database schema version number.
+		 */
+		const DB_VERSION = '1.0.0';
+
+		/**
 		 * Plugin Settings Array
 		 *
 		 * @var  array $settings The plugin settings array.
@@ -48,6 +55,8 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		public $settings = array();
 
 		const POST_TYPE_NAME = 'web3-login';
+
+		const TABLE_NAME_LOG = 'web3login_log';
 
 		/**
 		 * Initialize the plugin
@@ -80,9 +89,6 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 
 			$this->define( 'WEB3LBS_URL', plugin_dir_url( __FILE__ ) );
 			$this->define( 'WEB3LBS_PATH', plugin_dir_path( __FILE__ ) );
-
-			register_activation_hook( __FILE__, array( __CLASS__, 'activate' ) );
-			register_deactivation_hook( __FILE__, array( __CLASS__, 'deactivate' ) );
 
 			// Setup admin menu.
 			add_action( 'admin_menu', array( $this, 'admin_menu_init' ) );
@@ -155,7 +161,7 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 				// Add our login button.
 				add_action('login_footer', function() {
 					$buttonText = _('Login with web3 wallet', 'web3-login');
-					echo '<div class="web3-login-button-wrapper"><button type="button" id="web3loginConnect">' . $buttonText . '</button></div>';
+					echo '<div class="web3-login-button-wrapper"><button type="button" id="web3loginConnect">' . $buttonText . '</button><div class="web3loginMsg"></div></div>';
 				});
 
 			endif;
@@ -172,15 +178,15 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 			error_reporting(E_ALL);
 
 			// Check correct variables were sent;
-			$address = sanitize_text_field($_GET['address']) ?? '';
-			$nonce = sanitize_text_field($_GET['nonce']) ?? '';
-			$sig = sanitize_text_field($_GET['sig']) ?? '';
+			$address = sanitize_text_field($_POST['address']) ?? '';
+			$nonce = sanitize_text_field($_POST['nonce']) ?? '';
+			$sig = sanitize_text_field($_POST['sig']) ?? '';
 
 			// Instantiate the WP_Error object
 			$error = new WP_Error();
 
 			if (empty($address)  || empty($nonce) || empty($sig)) {
-				echo('Some parameters missing.' );
+				self::respondWithError('Some parameters missing.' );
 				wp_die();
 			}
 
@@ -193,31 +199,32 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 				'meta_value' => trim(strtolower($address))
 			));
 			if ( empty( $users ) ) {
-				echo('No user matches the wallet address sent.' );
-				wp_die();
-			}
-
-			if ( !empty( $error->get_error_codes() ) ) {
-				wp_redirect( wp_login_url() );
-				exit;
-			}		
-
-			// Verify signature.
-			$message = 'Allow web3-login at ' . $nonce;
-			if ( ! self::verifySignature($message, $sig, $address) ) {
-				echo('Invalid signature.' );
-				wp_die();
+				self::respondWithError('No user matches the wallet address sent.' );
 			}
 
 			$user = reset($users);
 
+			// Verify signature.
+			$message = 'Allow web3-login at ' . $nonce;
+			if ( ! self::verifySignature($message, $sig, $address) ) {
+				self::log($user->ID, 0, $nonce);
+				self::respondWithError('Invalid signature.' );
+			}
+
+			// Check nonce is valid (in future not already used)
+			if (!self::checkNonceIsValid($user->ID, $nonce)) {
+				self::log($user->ID, 0, $nonce);
+				self::respondWithError('Access denied');
+			}
+
 			// Finalize login.
+			self::log($user->ID, 1, $nonce);
 			wp_set_current_user($user->ID, $user->user_login );
 			wp_set_auth_cookie($user->ID);
 			do_action('wp_login', $user->user_login );
 
 			// Now redirect to dashboard.
-			wp_redirect( admin_url() );
+			self::respondWithSuccess('Login successful');
 
 			wp_die();
 		}
@@ -231,9 +238,26 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		}
 
 		/**
+		 * Return error message to user.
+		 */
+		private static function respondWithError($message) {
+			wp_send_json_error($message);
+		}
+
+		/**
+		 * Return success message to user.
+		 */
+		private static function respondWithSuccess($message) {
+			wp_send_json_success($message);
+		}
+
+		/**
 		 * 
 		 */
-		protected static function verifySignature($message, $signature, $address) {
+		private static function verifySignature($message, $signature, $address) {
+			if (!(strlen($signature) % 2 == 0)) {
+				return FALSE;
+			}
 			$msglen = strlen($message);
 			$hash   = \kornrunner\Keccak::hash("\x19Ethereum Signed Message:\n{$msglen}{$message}", 256);
 			$sign   = ["r" => substr($signature, 2, 64), 
@@ -252,7 +276,7 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		/**
 		 * 
 		 */
-		protected static function verifySignature_pass2($message, $signature, $address) {
+		private static function verifySignature_pass2($message, $signature, $address) {
 			/* Pass 2 sign */
 			$hash = \kornrunner\Keccak::hash($message, 256);
 			$sign = ['r' => substr($signature, 2, 64),
@@ -542,8 +566,80 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		public static function deactivate() {
 
 		}
-	}
 
+		/**
+		 * Create tables for use with plugin on activation.
+		 */
+		public static function web3_install() : void {
+
+			global $wpdb;
+
+			$table_name = $wpdb->prefix . self::TABLE_NAME_LOG;
+			
+			$charset_collate = $wpdb->get_charset_collate();
+
+			$sql = "CREATE TABLE $table_name ( 
+					`id` INT NOT NULL AUTO_INCREMENT ,
+					`uid` INT NOT NULL ,
+					`status` TINYINT(1) NOT NULL ,
+					`ipaddr` VARCHAR(50) NOT NULL ,
+					`nonce` DATETIME NOT NULL ,
+					`created` TIMESTAMP NOT NULL ,
+					PRIMARY KEY (`id`),
+					INDEX `user` (`uid`),
+					INDEX `none` (`nonce`)
+				) $charset_collate;";
+			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+			dbDelta( $sql );
+
+			add_option( 'web3login_db_version', self::DB_VERSION );
+		}
+
+
+		/**
+		 * Check if nonce provided for user is still valid.
+		 */
+		private static function checkNonceIsValid($user_id, int $nonce) : bool {
+
+			global $wpdb;
+			$table_name = $wpdb->prefix . self::TABLE_NAME_LOG;
+
+			$results = $wpdb->get_results($wpdb->prepare("SELECT id FROM $table_name WHERE uid = %d and status=1 and nonce>=%s", $user_id, date("Y-m-d H:i:s", $nonce / 1000)));
+
+			// If record exist then this nonce was used or a newer one was created.
+			if (!empty($results) && count($results) > 0) {
+				return FALSE;
+			}
+
+			return TRUE;
+		}
+
+		/**
+		 * Logs an error message.
+		 * 
+		 * @param $user_id
+		 * @param int $status
+		 * @param int $nonce
+		 */
+		private static function log(int $user_id, int $status, int $nonce) : void {
+		  
+			global $wpdb;
+			$table_name = $wpdb->prefix . self::TABLE_NAME_LOG;
+
+			$data=array(
+				'uid' => $user_id, 
+				'status' => $status,
+				'ipaddr' => $_SERVER['REMOTE_ADDR'], 
+				'nonce' => date("Y-m-d H:i:s", $nonce / 1000),
+				'created' => date("Y-m-d H:i:s") );		
+		
+			 $wpdb->insert( $table_name, $data);
+		}
+	}
+	
 	add_action( 'plugins_loaded', array( 'WEB3_LOGIN', 'init' ) );
+	// register_activation_hook( __FILE__, array( __CLASS__, 'activate' ) );
+	// register_deactivation_hook( __FILE__, array( __CLASS__, 'deactivate' ) );
+	register_activation_hook( __FILE__, array( 'WEB3_LOGIN', 'web3_install') );
 
 endif;
