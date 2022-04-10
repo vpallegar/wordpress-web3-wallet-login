@@ -11,4 +11,4 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 }
 
 
-delete_option( 'web3-login_options' );
+delete_option( 'web3-wallet-login_options' );

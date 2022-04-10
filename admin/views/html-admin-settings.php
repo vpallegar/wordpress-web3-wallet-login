@@ -16,17 +16,17 @@ if( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 		<?php
 		
 		// // output security fields
-		settings_fields( 'web3-login_options' );
+		settings_fields( 'web3-wallet-login_options' );
 		
 		// // output setting sections
-		do_settings_sections( 'web3-login' );
+		do_settings_sections( 'web3-wallet-login' );
 		
 		// // submit button
 		submit_button();
 		
 		?>
 
-		<p><?php _e("Once enabled, a Web3 wallet login button will appear on the login form.", "web3-login"); ?></p>
+		<p><?php _e("Once enabled, a Web3 wallet login button will appear on the login form.", "web3-wallet-login"); ?></p>
 		
 	</form>
 </div>

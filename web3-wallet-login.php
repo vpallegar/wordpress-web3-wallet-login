@@ -1,23 +1,23 @@
 <?php
 /**
- * Web3 Login
+ * Web3 Wallet Login
  *
- * Plugin Name: Web3 Login
+ * Plugin Name: Web3 Wallet Login
  * Description: Allow users to login via their web3 wallet address.
  * Version:     1.0.0
  * Author:      iPal Media Inc.
  * Author URI:  https://ipalmedia.com
- * Text Domain: web3-login
+ * Text Domain: web3-wallet-login
  * Domain Path: /languages
  *
- * @package Web3 Login
+ * @package Web3 Wallet Login
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-if ( ! class_exists( 'WEB3_LOGIN' ) ) :
+if ( ! class_exists( 'WEB3_WALLET_LOGIN' ) ) :
 
 
 	// include Classes.
@@ -31,7 +31,7 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 	/**
 	 * Plugin Main Class
 	 */
-	class WEB3_LOGIN {
+	class WEB3_WALLET_LOGIN {
 
 		/**
 		 * Plugin Version Number
@@ -54,7 +54,7 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		 */
 		public $settings = array();
 
-		const POST_TYPE_NAME = 'web3-login';
+		const POST_TYPE_NAME = 'web3-wallet-login';
 
 		const TABLE_NAME_LOG = 'web3login_log';
 
@@ -77,7 +77,7 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		public function __construct() {
 			
 			// Grab Plugin Settings.
-			$this->settings = get_option( 'web3-login_options' ) ?? [];
+			$this->settings = get_option( 'web3-wallet-login_options' ) ?? [];
 		}
 
 		/**
@@ -121,47 +121,47 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		public function admin_menu_init() {
 
 			add_options_page(
-				__( 'Web3 Login', 'web3-login' ),
-				esc_html__( 'Web3 Login', 'web3-login' ),
+				__( 'Web3 Wallet Login', 'web3-wallet-login' ),
+				esc_html__( 'Web3 Wallet Login', 'web3-wallet-login' ),
 				'manage_options',
-				'web3-login',
+				'web3-wallet-login',
 				array( $this, 'show_settings_page' )
 			);
 		}
 
 		/**
-		 * Show the web3 login button.
+		 * Show the Web3 Wallet Login button.
 		 *
 		 * @return void
 		 */
 		protected function setupLoginpage() {
 
-			// Enable login form adjustments if web3-login is enabled.
-			$settings = get_option('web3-login_options') ?? [];
+			// Enable login form adjustments if web3-wallet-login is enabled.
+			$settings = get_option('web3-wallet-login_options') ?? [];
 			if (!empty($settings['activate'])) :
 
 				// Load our style sheet on login page.
 				add_action( 'login_enqueue_scripts', function() {
 
 					// Add login styles
-					wp_enqueue_style( 'web3-login-plugin-sitestyles', WEB3LBS_URL . 'public/css/web3-login-styles.css', false, filemtime( WEB3LBS_PATH . 'public/css/web3-login-styles.css' ), 'all' );
+					wp_enqueue_style( 'web3-wallet-login-plugin-sitestyles', WEB3LBS_URL . 'public/css/web3-wallet-login-styles.css', false, filemtime( WEB3LBS_PATH . 'public/css/web3-wallet-login-styles.css' ), 'all' );
 
 					// Add external script dependencies.
-					wp_register_script( 'web3-login-plugin-library', WEB3LBS_URL . 'public/js/web3.min.js', false );
-					wp_enqueue_script( 'web3-login-plugin-library' );
-					wp_register_script( 'web3-login-plugin-librarybops', WEB3LBS_URL . 'public/js/bops.js', false );
-					wp_enqueue_script( 'web3-login-plugin-librarybops' );
+					wp_register_script( 'web3-wallet-login-plugin-library', WEB3LBS_URL . 'public/js/web3.min.js', false );
+					wp_enqueue_script( 'web3-wallet-login-plugin-library' );
+					wp_register_script( 'web3-wallet-login-plugin-librarybops', WEB3LBS_URL . 'public/js/bops.js', false );
+					wp_enqueue_script( 'web3-wallet-login-plugin-librarybops' );
 
 					// Load login button scripts.
-					wp_register_script( 'web3-login-plugin-scripts', WEB3LBS_URL . 'public/js/web3-login-library.js', array( 'jquery' ), filemtime( WEB3LBS_PATH . 'public/js/web3-login-library.js' ), true );
-					wp_enqueue_script( 'web3-login-plugin-scripts' );
+					wp_register_script( 'web3-wallet-login-plugin-scripts', WEB3LBS_URL . 'public/js/web3-wallet-login-library.js', array( 'jquery' ), filemtime( WEB3LBS_PATH . 'public/js/web3-wallet-login-library.js' ), true );
+					wp_enqueue_script( 'web3-wallet-login-plugin-scripts' );
 				});
 
 
 				// Add our login button.
 				add_action('login_form', function() {
-					$buttonText = _('Login with web3 wallet', 'web3-login');
-					echo '<div class="web3-login-button-wrapper"><button type="button" id="web3loginConnect">' . $buttonText . '</button><div class="web3loginMsg"></div></div>';
+					$buttonText = _('Login with web3 wallet', 'web3-wallet-login');
+					echo '<div class="web3-wallet-login-button-wrapper"><button type="button" id="web3loginConnect">' . $buttonText . '</button><div class="web3loginMsg"></div></div>';
 				});
 
 			endif;
@@ -191,7 +191,7 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 
 			// First lets find a user that matches this address.
 			$users = get_users(array(
-				'meta_key' => 'web3_login_address',
+				'meta_key' => 'WEB3_WALLET_LOGIN_address',
 				'meta_value' => trim(strtolower($address))
 			));
 			if ( empty( $users ) ) {
@@ -201,7 +201,7 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 			$user = reset($users);
 
 			// Verify signature.
-			$message = 'Allow web3-login at ' . $nonce;
+			$message = 'Allow web3-wallet-login at ' . $nonce;
 			if ( ! self::verifySignature($message, $sig, $address) ) {
 				self::log($user->ID, 0, $nonce);
 				self::respondWithError('Invalid signature.' );
@@ -288,19 +288,19 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		}
 
 		/**
-		 * Add Web3 Login fields to user registration form.
+		 * Add Web3 Wallet Login fields to user registration form.
 		 */
 		public function user_settings_setup( $user ) {
-			$settings = get_option('web3-login_options') ?? [];
+			$settings = get_option('web3-wallet-login_options') ?? [];
 			if (!empty($settings['activate'])) :
 			?>
-			  <h3><?php _e("Web3 Login Settings", "web3-login"); ?></h3>
+			  <h3><?php _e("Web3 Wallet Login Settings", "web3-wallet-login"); ?></h3>
 			  <table class="form-table">
 				<tr>
-				  <th><label for="web3_login_address"><?php _e("Wallet Address", "web3-login"); ?></label></th>
+				  <th><label for="WEB3_WALLET_LOGIN_address"><?php _e("Wallet Address", "web3-wallet-login"); ?></label></th>
 				  <td>
-					<input type="text" name="web3_login_address_value" id="web3_login_address" class="regular-text" 
-						value="<?php echo esc_attr( get_the_author_meta( 'web3_login_address', $user->ID ) ); ?>" /><br />
+					<input type="text" name="WEB3_WALLET_LOGIN_address_value" id="WEB3_WALLET_LOGIN_address" class="regular-text" 
+						value="<?php echo esc_attr( get_the_author_meta( 'WEB3_WALLET_LOGIN_address', $user->ID ) ); ?>" /><br />
 					<span class="description"><?php _e("Enter an ethereum compatible wallet address only."); ?></span>
 				</td>
 				</tr>
@@ -322,7 +322,7 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		public function user_settings_save( $user_id ) {
 			$saved = false;
 			if ( current_user_can( 'edit_user', $user_id ) ) {
-			  update_user_meta( $user_id, 'web3_login_address', trim(strtolower($_POST['web3_login_address_value'] ?? "")) );
+			  update_user_meta( $user_id, 'WEB3_WALLET_LOGIN_address', trim(strtolower($_POST['WEB3_WALLET_LOGIN_address_value'] ?? "")) );
 			  $saved = true;
 			}
 			return true;
@@ -333,8 +333,8 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		 */
 		public static function add_wp_ajax_functions() {
 
-			add_action( 'wp_ajax_web3_login_authenticate', array( __CLASS__, 'checkLogin' ) );
-			add_action( 'wp_ajax_nopriv_web3_login_authenticate', array( __CLASS__, 'checkLogin' ) );
+			add_action( 'wp_ajax_WEB3_WALLET_LOGIN_authenticate', array( __CLASS__, 'checkLogin' ) );
+			add_action( 'wp_ajax_nopriv_WEB3_WALLET_LOGIN_authenticate', array( __CLASS__, 'checkLogin' ) );
 
 		}
 
@@ -411,7 +411,7 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 			}
 			
 
-			$settings = get_option('web3-login_options') ?? [];
+			$settings = get_option('web3-wallet-login_options') ?? [];
 			
 
 			return;
@@ -423,27 +423,27 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		public function register_settings() {
 
 			register_setting(
-				'web3-login_options',
-				'web3-login_options',
+				'web3-wallet-login_options',
+				'web3-wallet-login_options',
 				array( $this, 'callback_validate_options' )
 			);
 
 			add_settings_section(
-				'web3-login_creds',
-				esc_html__( 'Web3 Login settings', 'web3-login' ),
+				'web3-wallet-login_creds',
+				esc_html__( 'Web3 Wallet Login settings', 'web3-wallet-login' ),
 				array( $this, 'callback_admin_settings' ),
-				'web3-login'
+				'web3-wallet-login'
 			);
 
 			add_settings_field(
 				'activate',
-				esc_html__( 'Enable Web3 user Login', 'web3-login' ),
+				esc_html__( 'Enable Web3 user Login', 'web3-wallet-login' ),
 				array( $this, 'callback_field_checkbox' ),
-				'web3-login',
-				'web3-login_creds',
+				'web3-wallet-login',
+				'web3-wallet-login_creds',
 				array(
 					'id'    => 'activate',
-					'label' => esc_html__( 'Yes Enable Ethereum Wallet Support', 'web3-login' ),
+					'label' => esc_html__( 'Yes Enable Ethereum Wallet Support', 'web3-wallet-login' ),
 				)
 			);
 		}
@@ -467,7 +467,7 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		 */
 		public function callback_validate_options( $input ) {
 
-			// web3-login activate.
+			// web3-wallet-login activate.
 			if ( isset( $input['activate'] ) ) {
 				$input['activate'] = sanitize_text_field( $input['activate'] );
 			}
@@ -481,7 +481,7 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		 */
 		public function callback_admin_settings() {
 
-			echo '<p>' . esc_html__( '', 'web3-login' ) . '</p>';
+			echo '<p>' . esc_html__( '', 'web3-wallet-login' ) . '</p>';
 		}
 
 		/**
@@ -491,15 +491,15 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		 */
 		public function callback_field_text( $args ) {
 
-			$options = get_option( 'web3-login_options', array( $this, 'settings_defaults' ) );
+			$options = get_option( 'web3-wallet-login_options', array( $this, 'settings_defaults' ) );
 
 			$id    = isset( $args['id'] ) ? $args['id'] : '';
 			$label = isset( $args['label'] ) ? $args['label'] : '';
 
 			$value = isset( $options[ $id ] ) ? sanitize_text_field( $options[ $id ] ) : '';
 
-			$output  = '<input id="web3-login_options_' . $id . '" name="web3-login_options[' . $id . ']" type="text" size="40" value="' . $value . '"><br />';
-			$output .= '<label for="web3-login_options_' . $id . '">' . $label . '</label>';
+			$output  = '<input id="web3-wallet-login_options_' . $id . '" name="web3-wallet-login_options[' . $id . ']" type="text" size="40" value="' . $value . '"><br />';
+			$output .= '<label for="web3-wallet-login_options_' . $id . '">' . $label . '</label>';
 
 			echo $output;
 		}
@@ -511,7 +511,7 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		 */
 		public function callback_field_checkbox( $args ) {
 
-			$options = get_option( 'web3-login_options', array( $this, 'settings_defaults' ) );
+			$options = get_option( 'web3-wallet-login_options', array( $this, 'settings_defaults' ) );
 
 			$id    = isset( $args['id'] ) ? $args['id'] : '';
 			$label = isset( $args['label'] ) ? $args['label'] : '';
@@ -519,8 +519,8 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 			$value = isset( $options[ $id ] ) ? sanitize_text_field( $options[ $id ] ) : '';
 			$checked = !empty($value) ? 'checked' : '';
 
-			$output  = '<input id="web3-login_options_' . $id . '" name="web3-login_options[' . $id . ']" type="checkbox" size="40" value="1" '.$checked.'> ';
-			$output .= '<label for="web3-login_options_' . $id . '">' . $label . '</label>';
+			$output  = '<input id="web3-wallet-login_options_' . $id . '" name="web3-wallet-login_options[' . $id . ']" type="checkbox" size="40" value="1" '.$checked.'> ';
+			$output .= '<label for="web3-wallet-login_options_' . $id . '">' . $label . '</label>';
 
 			echo $output;
 		}
@@ -625,8 +625,8 @@ if ( ! class_exists( 'WEB3_LOGIN' ) ) :
 		}
 	}
 	
-	add_action( 'plugins_loaded', array( 'WEB3_LOGIN', 'init' ) );
-	register_activation_hook( __FILE__, array( 'WEB3_LOGIN', 'web3_install') );
-	register_deactivation_hook( __FILE__, array( 'WEB3_LOGIN', 'deactivate' ) );
+	add_action( 'plugins_loaded', array( 'WEB3_WALLET_LOGIN', 'init' ) );
+	register_activation_hook( __FILE__, array( 'WEB3_WALLET_LOGIN', 'web3_install') );
+	register_deactivation_hook( __FILE__, array( 'WEB3_WALLET_LOGIN', 'deactivate' ) );
 
 endif;

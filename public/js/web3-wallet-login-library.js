@@ -6,7 +6,7 @@
     if (! (web3LoginButton.length > 0) ) return;
 
     var web3LoginButtonOrgValue = web3LoginButton.html();
-    var web3LoginMsgArea = document.querySelector('.web3-login-button-wrapper .web3loginMsg');
+    var web3LoginMsgArea = document.querySelector('.web3-wallet-login-button-wrapper .web3loginMsg');
     const web3 = new Web3(window.ethereum);
     var globalAccount;
     var globalSignature;
@@ -60,7 +60,7 @@
         }
     }
     async function signMessage() {
-        const message = 'Allow web3-login at ' + nonce;
+        const message = 'Allow web3-wallet-login at ' + nonce;
         try {
             const from = globalAccount;
             const msg = `0x${bops.from(message, 'utf8').toString('hex')}`;
@@ -78,7 +78,7 @@
 
 
     async function verifyMessage() {
-        const message = 'Allow web3-login at ' + nonce;
+        const message = 'Allow web3-wallet-login at ' + nonce;
         try {
             const from = globalAccount;
             const msg = `0x${bops.from(message, 'utf8').toString('hex')}`;
@@ -107,7 +107,7 @@
             url: "/wp-admin/admin-ajax.php",
             type: 'POST',
             "data": {
-                "action": 'web3_login_authenticate',
+                "action": 'WEB3_WALLET_LOGIN_authenticate',
                 "address": globalAccount,
                 "nonce": nonce,
                 "sig": globalSignature

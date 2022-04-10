@@ -1,11 +1,11 @@
-.web3-login-button-wrapper {
+.web3-wallet-login-button-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     margin-bottom: 10px;
 }
-.web3-login-button-wrapper button {
+.web3-wallet-login-button-wrapper button {
     width: 100%;
     max-width: 225px;
     background-color: blue;
@@ -20,7 +20,7 @@
     cursor: pointer;
 }
 
-.web3-login-button-wrapper .web3loginMsg {
+.web3-wallet-login-button-wrapper .web3loginMsg {
     width: 300px;
     max-width: 100%;
     margin: 0 auto;
