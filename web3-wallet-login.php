@@ -161,7 +161,18 @@ if ( ! class_exists( 'WEB3_WALLET_LOGIN' ) ) :
 				// Add our login button.
 				add_action('login_form', function() {
 					$buttonText = _('Login with web3 wallet', 'web3-wallet-login');
-					echo '<div class="web3-wallet-login-button-wrapper"><button type="button" id="web3loginConnect">' . $buttonText . '</button><div class="web3loginMsg"></div></div>';
+					$allowed_html = [
+						'div' => [
+								'class' => []
+								], 
+						'button' => [
+								'class' => [],
+								'id' => [],
+								'type' => [],
+								'name' => []
+								]
+						];
+					echo wp_kses('<div class="web3-wallet-login-button-wrapper"><button type="button" id="web3loginConnect">' . $buttonText . '</button><div class="web3loginMsg"></div></div>', $allowed_html);
 				});
 
 			endif;
@@ -321,8 +332,9 @@ if ( ! class_exists( 'WEB3_WALLET_LOGIN' ) ) :
 		 */
 		public function user_settings_save( $user_id ) {
 			$saved = false;
-			if ( current_user_can( 'edit_user', $user_id ) ) {
-			  update_user_meta( $user_id, 'WEB3_WALLET_LOGIN_address', trim(strtolower($_POST['WEB3_WALLET_LOGIN_address_value'] ?? "")) );
+			$settings = get_option('web3-wallet-login_options') ?? [];
+			if ( !empty($settings['activate']) && current_user_can( 'edit_user', $user_id ) ) {
+			  update_user_meta( $user_id, 'WEB3_WALLET_LOGIN_address', trim(strtolower(sanitize_text_field($_POST['WEB3_WALLET_LOGIN_address_value'] ?? ""))) );
 			  $saved = true;
 			}
 			return true;
@@ -501,7 +513,20 @@ if ( ! class_exists( 'WEB3_WALLET_LOGIN' ) ) :
 			$output  = '<input id="web3-wallet-login_options_' . $id . '" name="web3-wallet-login_options[' . $id . ']" type="text" size="40" value="' . $value . '"><br />';
 			$output .= '<label for="web3-wallet-login_options_' . $id . '">' . $label . '</label>';
 
-			echo $output;
+			$allowed_html = [
+				'br' => [],
+				'input' => [
+						'id' => [],
+						'name' => [],
+						'type' => [],
+						'size' => [],
+						'value' => []
+						], 
+				'label' => [
+						'for' => []
+						]
+				];
+			echo wp_kses($output, $allowed_html);
 		}
 
 		/**
@@ -522,7 +547,21 @@ if ( ! class_exists( 'WEB3_WALLET_LOGIN' ) ) :
 			$output  = '<input id="web3-wallet-login_options_' . $id . '" name="web3-wallet-login_options[' . $id . ']" type="checkbox" size="40" value="1" '.$checked.'> ';
 			$output .= '<label for="web3-wallet-login_options_' . $id . '">' . $label . '</label>';
 
-			echo $output;
+			$allowed_html = [
+				'br' => [],
+				'input' => [
+						'id' => [],
+						'name' => [],
+						'type' => [],
+						'size' => [],
+						'value' => [],
+						'checked' => []
+						], 
+				'label' => [
+						'for' => []
+						]
+				];
+			echo wp_kses($output, $allowed_html);
 		}
 
 		/**
@@ -617,7 +656,7 @@ if ( ! class_exists( 'WEB3_WALLET_LOGIN' ) ) :
 			$data=array(
 				'uid' => $user_id, 
 				'status' => $status,
-				'ipaddr' => $_SERVER['REMOTE_ADDR'], 
+				'ipaddr' => sanitize_text_field($_SERVER['REMOTE_ADDR']), 
 				'nonce' => date("Y-m-d H:i:s", $nonce / 1000),
 				'created' => date("Y-m-d H:i:s") );		
 		
