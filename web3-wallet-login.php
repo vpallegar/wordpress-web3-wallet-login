@@ -155,6 +155,7 @@ if ( ! class_exists( 'WEB3_WALLET_LOGIN' ) ) :
 					// Load login button scripts.
 					wp_register_script( 'web3-wallet-login-plugin-scripts', WEB3LBS_URL . 'public/js/web3-wallet-login-library.js', array( 'jquery' ), filemtime( WEB3LBS_PATH . 'public/js/web3-wallet-login-library.js' ), true );
 					wp_enqueue_script( 'web3-wallet-login-plugin-scripts' );
+					wp_localize_script( 'web3-wallet-login-plugin-scripts', 'loginvars', ['site' => site_url()] );
 				});
 
 
@@ -184,13 +185,14 @@ if ( ! class_exists( 'WEB3_WALLET_LOGIN' ) ) :
 		 */
 		public static function checkLogin() {
 
+			// Lets ensure web3-wallet-login is enabled.
+			$settings = get_option('web3-wallet-login_options') ?? [];
+			if (empty($settings['activate'])) wp_die();
+
 			// Check correct variables were sent;
 			$address = sanitize_text_field($_POST['address']) ?? '';
 			$nonce = sanitize_text_field($_POST['nonce']) ?? '';
 			$sig = sanitize_text_field($_POST['sig']) ?? '';
-
-			// Instantiate the WP_Error object
-			$error = new WP_Error();
 
 			if (empty($address)  || empty($nonce) || empty($sig)) {
 				self::respondWithError('Some parameters missing.' );
@@ -212,7 +214,8 @@ if ( ! class_exists( 'WEB3_WALLET_LOGIN' ) ) :
 			$user = reset($users);
 
 			// Verify signature.
-			$message = 'Allow web3-wallet-login at ' . $nonce;
+			$site_url = site_url();
+			$message = 'Allow web3-wallet-login for ' . $site_url . ' at ' . $nonce;
 			if ( ! self::verifySignature($message, $sig, $address) ) {
 				self::log($user->ID, 0, $nonce);
 				self::respondWithError('Invalid signature.' );

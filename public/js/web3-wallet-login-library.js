@@ -4,6 +4,7 @@
     var web3LoginButton = $('#web3loginConnect');
 
     if (! (web3LoginButton.length > 0) ) return;
+    if (! (loginvars.site.length > 0) ) return;
 
     var web3LoginButtonOrgValue = web3LoginButton.html();
     var web3LoginMsgArea = document.querySelector('.web3-wallet-login-button-wrapper .web3loginMsg');
@@ -60,7 +61,7 @@
         }
     }
     async function signMessage() {
-        const message = 'Allow web3-wallet-login at ' + nonce;
+        const message = 'Allow web3-wallet-login for ' + loginvars.site + ' at ' + nonce;
         try {
             const from = globalAccount;
             const msg = `0x${bops.from(message, 'utf8').toString('hex')}`;
@@ -78,7 +79,7 @@
 
 
     async function verifyMessage() {
-        const message = 'Allow web3-wallet-login at ' + nonce;
+        const message = 'Allow web3-wallet-login for ' + loginvars.site + ' at ' + nonce;
         try {
             const from = globalAccount;
             const msg = `0x${bops.from(message, 'utf8').toString('hex')}`;
