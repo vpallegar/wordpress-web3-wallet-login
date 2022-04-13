@@ -105,12 +105,13 @@
 
     var finalize_login = function() {
         $.ajax({
-            url: "/wp-admin/admin-ajax.php",
+            url: loginvars.actionurl,
             type: 'POST',
             "data": {
                 "action": 'WEB3_WALLET_LOGIN_authenticate',
+                "_ajax_nonce": loginvars.nonce,
                 "address": globalAccount,
-                "nonce": nonce,
+                "signonce": nonce,
                 "sig": globalSignature
             },
             dataType: 'json', // added data type

@@ -3,7 +3,7 @@ Contributors: vpallegar
 Tags: wordpress, web3, wallet, login, ethereum, polygon
 Requires at least: 4.7
 Tested up to: 5.9
-Stable tag: 1.0.0
+Stable tag: 1.1.1
 Requires PHP: 7.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -36,6 +36,12 @@ To report issues or submit PR's please visit https://github.com/vpallegar/wordpr
 
 == Changelog ==
 
-= 1.0 =
-* Initial commit
+= 1.1.1 =
+* Fixed bug for logging in without $user object sent.
+
+= 1.1.0 =
+* Added check_ajax_referer to login requests.
+
+= 1.0.0 =
+* Initial commit.
 

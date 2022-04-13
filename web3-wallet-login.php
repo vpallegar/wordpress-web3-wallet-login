@@ -4,7 +4,7 @@
  *
  * Plugin Name: Web3 Wallet Login
  * Description: Allow users to login via their web3 wallet address.
- * Version:     1.0.0
+ * Version:     1.1.1
  * Author:      iPal Media Inc.
  * Author URI:  https://ipalmedia.com
  * Text Domain: web3-wallet-login
@@ -38,7 +38,7 @@ if ( ! class_exists( 'WEB3_WALLET_LOGIN' ) ) :
 		 *
 		 * @var  string $version The plugin version number.
 		 */
-		public $version = '1.0.0';
+		public $version = '1.1.1';
 
 		/**
 		 * Database Cchema Version Number
@@ -155,7 +155,7 @@ if ( ! class_exists( 'WEB3_WALLET_LOGIN' ) ) :
 					// Load login button scripts.
 					wp_register_script( 'web3-wallet-login-plugin-scripts', WEB3LBS_URL . 'public/js/web3-wallet-login-library.js', array( 'jquery' ), filemtime( WEB3LBS_PATH . 'public/js/web3-wallet-login-library.js' ), true );
 					wp_enqueue_script( 'web3-wallet-login-plugin-scripts' );
-					wp_localize_script( 'web3-wallet-login-plugin-scripts', 'loginvars', ['site' => site_url()] );
+					wp_localize_script( 'web3-wallet-login-plugin-scripts', 'loginvars', ['site' => site_url(), 'nonce' => wp_create_nonce('web3_wallet_login_nonce'), 'actionurl' => admin_url('admin-ajax.php'),] );
 				});
 
 
@@ -191,13 +191,14 @@ if ( ! class_exists( 'WEB3_WALLET_LOGIN' ) ) :
 
 			// Check correct variables were sent;
 			$address = sanitize_text_field($_POST['address']) ?? '';
-			$nonce = sanitize_text_field($_POST['nonce']) ?? '';
+			$nonce = sanitize_text_field($_POST['signonce']) ?? '';
 			$sig = sanitize_text_field($_POST['sig']) ?? '';
 
 			if (empty($address)  || empty($nonce) || empty($sig)) {
 				self::respondWithError('Some parameters missing.' );
-				wp_die();
 			}
+
+            check_ajax_referer('web3_wallet_login_nonce');
 
 			// Load dependencies needed to check signature.
 			require_once(WEB3LBS_PATH . 'vendor/autoload.php');
@@ -231,7 +232,7 @@ if ( ! class_exists( 'WEB3_WALLET_LOGIN' ) ) :
 			self::log($user->ID, 1, $nonce);
 			wp_set_current_user($user->ID, $user->user_login );
 			wp_set_auth_cookie($user->ID);
-			do_action('wp_login', $user->user_login );
+			do_action('wp_login', $user->user_login, $user );
 
 			// Now redirect to dashboard.
 			self::respondWithSuccess('Login successful');
